@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ###################################################################
-#         Author: Aamnah Akram
 #           Link: http://github.com/aamnah/bash-scripts
 #    Description: Installs an AMP stack and PHPMyAdmin plus tweaks. For Debian based systems.
 #            Run: bash install_lamp_debian.sh
@@ -22,7 +21,7 @@ Cyan='\033[0;36m'         # Cyan
 
 # GENERATE PASSOWRDS
 # sudo apt -qy install openssl # openssl used for generating a truly random password
-PASS_MYSQL_ROOT=`openssl rand -base64 12` # this you need to save 
+PASS_MYSQL_ROOT="India@123" # this you need to save 
 PASS_PHPMYADMIN_APP=`openssl rand -base64 12` # can be random, won't be used again
 PASS_PHPMYADMIN_ROOT="${PASS_MYSQL_ROOT}" # Your MySQL root pass
 
@@ -79,6 +78,7 @@ installMySQL() {
 	
 	# DEBIAN_FRONTEND=noninteractive # by setting this to non-interactive, no questions will be asked
 	DEBIAN_FRONTEND=noninteractive sudo apt -qy install mysql-server mysql-client
+  	# DEBIAN_FRONTEND= sudo apt -qy install mysql-server mysql-client
 }
 
 secureMySQL() {
@@ -136,8 +136,8 @@ restartApache() {
 # RUN
 update
 installApache
-installLetsEncryptCertbot
-installPHP
+#installLetsEncryptCertbot
+#installPHP
 installMySQL
 secureMySQL
 installPHPMyAdmin
@@ -146,6 +146,23 @@ setPermissions
 restartApache
 
 echo -e "\n${Green} SUCCESS! MySQL password is: ${PASS_MYSQL_ROOT} ${Color_Off}"
+
+mysql -uroot -p${rootpasswd} -e "CREATE DATABASE mca /*\!40100 DEFAULT CHARACTER SET utf8 */;"
+mysql -uroot -p${rootpasswd} -e "CREATE USER admin1@'%' IDENTIFIED BY 'India@123';"
+mysql -uroot -p${rootpasswd} -e "GRANT ALL PRIVILEGES ON *.* TO 'admin1'@'%';"
+mysql -uroot -p${rootpasswd} -e "FLUSH PRIVILEGES;"
+
+echo "Enter Github Token"
+git clone https://github.com/MCA-Download/MCADB.git
+
+echo "Enter root MYSQL password"
+mysql -u root -p mca < /home/ubuntu/MCADB/mca.sql
+
+echo "Installing Dependencies"
+
+sudo apt install python3-pip
+pip3 install PyPDF2 PyMySQL boto3 lxml xlwt xlrd
+
 
 # TODO
 # - [x] Figure out why it is asking for MySQL password and not just taking it from the variable in heredoc (cz: to avoid redirection, programs don't let heredoc enter passwords)
